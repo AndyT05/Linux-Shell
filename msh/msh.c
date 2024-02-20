@@ -102,14 +102,14 @@ int main(int argc, char *argv[])
     // Execute built-in commands: exit and cd
     if (strcmp(token[0], "exit") == 0)
     {
-      if((token_count - 1) !=1)
+      if ((token_count - 1) != 1)
       {
         write(STDERR_FILENO, error_message, strlen(error_message));
         exit(0);
       }
       else
       {
-      exit(0);
+        exit(0);
       }
     }
     else if (strcmp(token[0], "cd") == 0)
@@ -143,7 +143,29 @@ int main(int argc, char *argv[])
       }
       else if (pid == 0)
       {
+        int i;
+        for (i = 1; i < (token_count - 1); i++)
+        {
+          if (strcmp(token[i], ">") == 0)
+          {
+            // Check if there are more tokens after the next token following ">"
+            if ((i + 2) != (token_count - 1))
+            {
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              exit(0);
+            }
 
+            int fd = open(token[i + 1], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+            if (fd < 0)
+            {
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              exit(0);
+            }
+            dup2(fd, 1);
+            close(fd);
+            token[i] = NULL;
+          }
+        }
         // Child process: execute command
         execvp(token[0], token);
         // If execv returns, an error occurred
