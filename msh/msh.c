@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #define WHITESPACE " \t\n"
 #define MAX_COMMAND_SIZE 255
@@ -38,32 +39,26 @@
 int main(int argc, char *argv[])
 {
   char error_message[30] = "An error has occurred\n";
+  char *command_string = (char *)malloc(MAX_COMMAND_SIZE);
 
-  // Check if the shell is invoked with correct arguments
+  FILE *input_file = NULL;
+
   if (argc > 2)
   {
-    // Print error message and exit with status 1
+    printf("too many argument");
     write(STDERR_FILENO, error_message, strlen(error_message));
     exit(1);
   }
 
-  char *command_string = (char *)malloc(MAX_COMMAND_SIZE);
-
-  // Determine input source: batch mode or interactive mode
-  FILE *input_file = NULL;
   if (argc == 2)
   {
-    // Batch mode
     input_file = fopen(argv[1], "r");
     if (input_file == NULL)
     {
-      // Print error message and exit with status 1
-      write(STDERR_FILENO, error_message, strlen(error_message));
-      exit(1);
+      printf("nothing in the file");
     }
   }
 
-  // Loop for interactive or batch mode
   while (1)
   {
     if (input_file == NULL)
@@ -73,7 +68,6 @@ int main(int argc, char *argv[])
       // Read command from stdin
       if (!fgets(command_string, MAX_COMMAND_SIZE, stdin))
       {
-        // End of file (Ctrl+D), exit gracefully
         break;
       }
     }
@@ -82,7 +76,7 @@ int main(int argc, char *argv[])
       // Batch mode: read command from file
       if (!fgets(command_string, MAX_COMMAND_SIZE, input_file))
       {
-        // End of file, exit gracefully
+        // End of file, exit
         break;
       }
     }
@@ -117,7 +111,7 @@ int main(int argc, char *argv[])
       if ((token_count - 1) != 2)
       {
         // Print error message for invalid arguments
-        write(STDERR_FILENO, error_message, strlen(error_message));
+        printf("\nInvalid argument");
       }
       else
       {
@@ -125,7 +119,7 @@ int main(int argc, char *argv[])
         if (chdir(token[1]) == -1)
         {
           // Print error message for failed directory change
-          write(STDERR_FILENO, error_message, strlen(error_message));
+          printf("\nChange directory fail! ");
         }
       }
     }
@@ -136,13 +130,15 @@ int main(int argc, char *argv[])
       if (pid == -1)
       {
         // Fork failed, print error message
-        write(STDERR_FILENO, error_message, strlen(error_message));
+        printf("\nFolk fail");
       }
       else if (pid == 0)
       {
+
         // Child process: execute command
-        execv(token[0], token);
+        execvp(token[0], token);
         // If execv returns, an error occurred
+        /**/
         write(STDERR_FILENO, error_message, strlen(error_message));
         exit(EXIT_FAILURE);
       }
