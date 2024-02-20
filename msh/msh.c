@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
 
   if (argc > 2)
   {
-    printf("too many argument");
     write(STDERR_FILENO, error_message, strlen(error_message));
     exit(1);
   }
@@ -55,7 +54,8 @@ int main(int argc, char *argv[])
     input_file = fopen(argv[1], "r");
     if (input_file == NULL)
     {
-      printf("nothing in the file");
+      write(STDERR_FILENO, error_message, strlen(error_message));
+      exit(1);
     }
   }
 
@@ -102,8 +102,15 @@ int main(int argc, char *argv[])
     // Execute built-in commands: exit and cd
     if (strcmp(token[0], "exit") == 0)
     {
-      // Exit the shell
+      if((token_count - 1) !=1)
+      {
+        write(STDERR_FILENO, error_message, strlen(error_message));
+        exit(0);
+      }
+      else
+      {
       exit(0);
+      }
     }
     else if (strcmp(token[0], "cd") == 0)
     {
@@ -111,7 +118,8 @@ int main(int argc, char *argv[])
       if ((token_count - 1) != 2)
       {
         // Print error message for invalid arguments
-        printf("\nInvalid argument");
+        write(STDERR_FILENO, error_message, strlen(error_message));
+        exit(0);
       }
       else
       {
@@ -119,7 +127,8 @@ int main(int argc, char *argv[])
         if (chdir(token[1]) == -1)
         {
           // Print error message for failed directory change
-          printf("\nChange directory fail! ");
+          write(STDERR_FILENO, error_message, strlen(error_message));
+          exit(0);
         }
       }
     }
@@ -140,7 +149,7 @@ int main(int argc, char *argv[])
         // If execv returns, an error occurred
         /**/
         write(STDERR_FILENO, error_message, strlen(error_message));
-        exit(EXIT_FAILURE);
+        exit(1);
       }
       else
       {
