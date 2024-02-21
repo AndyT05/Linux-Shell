@@ -43,6 +43,8 @@ int main(int argc, char *argv[])
 {
     char error_message[30] = "An error has occurred\n";
     char *command_string = (char *)malloc(MAX_COMMAND_SIZE);
+    char *directories[] = {"/bin", "/usr/bin", "/usr/local/bin", "./"};
+
 
     FILE *input_file = NULL;
 
@@ -172,8 +174,8 @@ int main(int argc, char *argv[])
             }
             else if (pid == 0)
             {
-                int i;
-                for (i = 1; i < (token_count - 1); i++)
+                
+                for (int i = 1; i < (token_count - 1); i++)
                 {
                     if (strcmp(token[i], ">") == 0)
                     {
@@ -195,10 +197,24 @@ int main(int argc, char *argv[])
                         token[i] = NULL;
                     }
                 }
+
+
                 // Child process: execute command
-                execvp(token[0], token);
-                // If execv returns, an error occurred
-                /**/
+                // Loop through directories and search for executable
+                for (int i = 0; i < sizeof(directories) / sizeof(directories[0]); i++)
+                {
+                    char path[MAX_COMMAND_SIZE];
+                    snprintf(path, sizeof(path), "%s/%s", directories[i], token[0]);
+                    if (access(path, X_OK) == 0)
+                    {
+                        // Execute the command
+                        execv(path, token);
+                        // If execv returns, an error occurred
+                        write(STDERR_FILENO, error_message, strlen(error_message));
+                        exit(1);
+                    }
+                }
+                // If no executable found
                 write(STDERR_FILENO, error_message, strlen(error_message));
                 exit(1);
             }
