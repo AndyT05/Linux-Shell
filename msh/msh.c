@@ -98,7 +98,21 @@ int main(int argc, char *argv[])
       }
       token_count++;
     }
-
+    /*
+    for ( int token_index = 0; token_index < token_count; token_index++)
+    {
+      printf("token[%d] = %s\n", token_index, token[token_index]);
+    }
+    */
+    
+    // Check if the first token is NULL or empty
+    if (token[0] == NULL)
+    {
+        // Free allocated memory
+        free(head_ptr);
+        continue;
+    }
+  
     // Execute built-in commands: exit and cd
     if (strcmp(token[0], "exit") == 0)
     {
