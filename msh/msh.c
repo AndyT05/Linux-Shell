@@ -154,14 +154,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        else if (strcmp(token[0], "echo") == 0)
-        {
-            // Print the rest of the tokens
-            for (int i = 1; i < token_count - 1; i++)
-            {
-                printf("%s ", token[i]);
-            }
-        }
+
         else
         {
             // Execute external commands
